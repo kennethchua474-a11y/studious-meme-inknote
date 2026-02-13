@@ -8,6 +8,7 @@ packages = [{ include = "inknote", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.15"
+ttkbootstrap = "^1.20.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
@@ -40,7 +41,7 @@ explicit_package_bases = true
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["pytest", "pytest.*"]
+module = ["pytest", "pytest.*", "ttkbootstrap.*"]
 ignore_missing_imports = true
 
 [tool.bandit]

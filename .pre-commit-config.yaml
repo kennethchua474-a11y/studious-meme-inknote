@@ -22,5 +22,4 @@ repos:
         name: pytest
         entry: poetry run pytest
         language: system
-        types: [python]
-
+        pass_filenames: false
