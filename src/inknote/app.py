@@ -3,7 +3,8 @@ from __future__ import annotations
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH
 
-from inknote.themes import validate_theme
+from inknote.settings import load_settings, save_settings
+from inknote.themes import get_supported_themes, validate_theme
 
 
 class InkNoteApp:
@@ -12,8 +13,9 @@ class InkNoteApp:
     """
 
     def __init__(self, theme: str) -> None:
-        validated_theme = validate_theme(theme)
-        self.root = ttk.Window(themename=validated_theme)
+        self.settings = load_settings()
+
+        self.root = ttk.Window(themename=validate_theme(self.settings.theme))
         self.root.title("InkNote")
         self.root.geometry("900x600")
 
@@ -26,14 +28,21 @@ class InkNoteApp:
     def _build_menu(self) -> None:
         menubar = ttk.Menu(self.root)
 
+        # File menu
         file_menu = ttk.Menu(menubar, tearoff=False)
-        file_menu.add_command(label="New")
-        file_menu.add_command(label="Open")
-        file_menu.add_command(label="Save")
-        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
-
         menubar.add_cascade(label="File", menu=file_menu)
+
+        # Theme menu
+        theme_menu = ttk.Menu(menubar, tearoff=False)
+
+        for theme in get_supported_themes():
+            theme_menu.add_command(
+                label=theme,
+                command=lambda t=theme: self._change_theme(t),
+            )
+
+        menubar.add_cascade(label="Theme", menu=theme_menu)
 
         self.root.config(menu=menubar)
 
@@ -47,6 +56,13 @@ class InkNoteApp:
             undo=True,
         )
         self.text_widget.pack(fill=BOTH, expand=True)
+
+    def _change_theme(self, theme: str) -> None:
+        validated = validate_theme(theme)
+        self.root.style.theme_use(validated)
+
+        self.settings.theme = validated
+        save_settings(self.settings)
 
     def run(self) -> None:
         self.root.mainloop()
