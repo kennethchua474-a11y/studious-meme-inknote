@@ -18,7 +18,13 @@ def fake_appdata(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def test_default_settings_when_file_missing(fake_appdata: Path) -> None:
+    # Ensure no existing settings file
+    settings_path = get_settings_path()
+    if settings_path.exists():
+        settings_path.unlink()
+
     settings = load_settings()
+
     assert settings.theme == DEFAULT_THEME
 
 
