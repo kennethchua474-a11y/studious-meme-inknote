@@ -8,6 +8,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH
 
 from inknote.fileops import FileReadError, FileWriteError, read_file, write_file
+from inknote.search import find_all
 from inknote.settings import load_settings, save_settings
 from inknote.themes import get_supported_themes, validate_theme
 
@@ -57,6 +58,12 @@ class InkNoteApp:
 
         menubar.add_cascade(label="Theme", menu=theme_menu)
 
+        # Search menu
+        search_menu = ttk.Menu(menubar, tearoff=False)
+
+        search_menu.add_command(label="Find...", command=self._open_search_dialog)
+
+        menubar.add_cascade(label="Search", menu=search_menu)
         self.root.config(menu=menubar)
 
     def _build_editor(self) -> None:
@@ -69,6 +76,11 @@ class InkNoteApp:
             undo=True,
         )
         self.text_widget.pack(fill=BOTH, expand=True)
+
+        self.text_widget.tag_configure(
+            "search_highlight",
+            background="yellow",
+        )
 
     # -----------------
     # FILE OPERATIONS
@@ -148,3 +160,56 @@ class InkNoteApp:
 
     def run(self) -> None:
         self.root.mainloop()
+
+    def _open_search_dialog(self) -> None:
+        dialog = ttk.Toplevel(self.root)
+        dialog.title("Find")
+        dialog.geometry("300x120")
+        dialog.resizable(False, False)
+
+        ttk.Label(dialog, text="Find:").pack(pady=(10, 0))
+
+        entry = ttk.Entry(dialog)
+        entry.pack(fill="x", padx=10, pady=5)
+        entry.focus()
+
+        ignore_case_var = ttk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            dialog,
+            text="Ignore Case",
+            variable=ignore_case_var,
+        ).pack()
+
+        ttk.Button(
+            dialog,
+            text="Search",
+            command=lambda: self._perform_search(
+                entry.get(),
+                ignore_case_var.get(),
+            ),
+        ).pack(pady=5)
+
+    def _perform_search(self, query: str, ignore_case: bool) -> None:
+        self._clear_search_highlight()
+
+        if not query:
+            return
+
+        content = self.text_widget.get("1.0", "end-1c")
+        matches = find_all(content, query, ignore_case=ignore_case)
+
+        for start, end in matches:
+            start_index = f"1.0+{start}c"
+            end_index = f"1.0+{end}c"
+            self.text_widget.tag_add(
+                "search_highlight",
+                start_index,
+                end_index,
+            )
+
+    def _clear_search_highlight(self) -> None:
+        self.text_widget.tag_remove(
+            "search_highlight",
+            "1.0",
+            "end",
+        )
