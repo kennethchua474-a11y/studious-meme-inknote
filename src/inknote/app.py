@@ -21,12 +21,15 @@ class InkNoteApp:
     def __init__(self, theme: str) -> None:
         self.settings = load_settings()
         self.current_file: Optional[Path] = None
+        self.is_modified = False
 
         self.root = ttk.Window(themename=validate_theme(self.settings.theme))
         self.root.title("InkNote")
         self.root.geometry("900x600")
 
         self._build_ui()
+
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_ui(self) -> None:
         self._build_menu()
@@ -76,7 +79,7 @@ class InkNoteApp:
             undo=True,
         )
         self.text_widget.pack(fill=BOTH, expand=True)
-
+        self.text_widget.bind("<<Modified>>", self._on_text_modified)
         self.text_widget.tag_configure(
             "search_highlight",
             background="yellow",
@@ -87,6 +90,9 @@ class InkNoteApp:
     # -----------------
 
     def _new_file(self) -> None:
+        if not self._confirm_discard_changes():
+            return
+        self.is_modified = False
         self.text_widget.delete("1.0", "end")
         self.current_file = None
         self._update_title()
@@ -105,6 +111,7 @@ class InkNoteApp:
             self.text_widget.insert("1.0", content)
             self.current_file = Path(file_path)
             self._update_title()
+            self.is_modified = False
         except FileReadError as exc:
             messagebox.showerror("Error", str(exc))
 
@@ -116,6 +123,8 @@ class InkNoteApp:
         try:
             content = self.text_widget.get("1.0", "end-1c")
             write_file(self.current_file, content)
+            self.is_modified = False
+            self._update_title()
         except FileWriteError as exc:
             messagebox.showerror("Error", str(exc))
 
@@ -133,6 +142,7 @@ class InkNoteApp:
             path = Path(file_path)
             write_file(path, content)
             self.current_file = path
+            self.is_modified = False
             self._update_title()
         except FileWriteError as exc:
             messagebox.showerror("Error", str(exc))
@@ -153,10 +163,9 @@ class InkNoteApp:
     # -----------------
 
     def _update_title(self) -> None:
-        if self.current_file:
-            self.root.title(f"InkNote - {self.current_file.name}")
-        else:
-            self.root.title("InkNote")
+        name = self.current_file.name if self.current_file else "Untitled"
+        marker = "*" if self.is_modified else ""
+        self.root.title(f"InkNote - {name}{marker}")
 
     def run(self) -> None:
         self.root.mainloop()
@@ -213,3 +222,31 @@ class InkNoteApp:
             "1.0",
             "end",
         )
+
+    def _on_text_modified(self, event: object) -> None:
+        if self.text_widget.edit_modified():
+            self.is_modified = True
+            self._update_title()
+            self.text_widget.edit_modified(False)
+
+    def _confirm_discard_changes(self) -> bool:
+        if not self.is_modified:
+            return True
+
+        result = messagebox.askyesnocancel(
+            "Unsaved Changes",
+            "You have unsaved changes. Save before continuing?",
+        )
+
+        if result is None:
+            return False
+
+        if result:
+            self._save_file()
+            return not self.is_modified
+
+        return True
+
+    def _on_close(self) -> None:
+        if self._confirm_discard_changes():
+            self.root.destroy()
