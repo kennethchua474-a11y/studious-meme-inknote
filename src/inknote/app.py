@@ -31,9 +31,19 @@ class InkNoteApp:
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
+        self._bind_shortcuts()
+
     def _build_ui(self) -> None:
         self._build_menu()
         self._build_editor()
+
+    def _bind_shortcuts(self) -> None:
+        self.root.bind("<Control-n>", lambda e: self._new_file())
+        self.root.bind("<Control-o>", lambda e: self._open_file())
+        self.root.bind("<Control-s>", lambda e: self._save_file())
+        self.root.bind("<Control-S>", lambda e: self._save_file_as())
+        self.root.bind("<Control-f>", lambda e: self._open_search_dialog())
+        self.root.bind("<Control-q>", lambda e: self._on_close())
 
     def _build_menu(self) -> None:
         menubar = ttk.Menu(self.root)
@@ -41,12 +51,37 @@ class InkNoteApp:
         # File menu
         file_menu = ttk.Menu(menubar, tearoff=False)
 
-        file_menu.add_command(label="New", command=self._new_file)
-        file_menu.add_command(label="Open...", command=self._open_file)
-        file_menu.add_command(label="Save", command=self._save_file)
-        file_menu.add_command(label="Save As...", command=self._save_file_as)
+        file_menu.add_command(
+            label="New",
+            accelerator="Ctrl+N",
+            command=self._new_file,
+        )
+
+        file_menu.add_command(
+            label="Open...",
+            accelerator="Ctrl+O",
+            command=self._open_file,
+        )
+
+        file_menu.add_command(
+            label="Save",
+            accelerator="Ctrl+S",
+            command=self._save_file,
+        )
+
+        file_menu.add_command(
+            label="Save As...",
+            accelerator="Ctrl+Shift+S",
+            command=self._save_file_as,
+        )
+
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.root.quit)
+
+        file_menu.add_command(
+            label="Exit",
+            accelerator="Ctrl+Q",
+            command=self.root.quit,
+        )
 
         menubar.add_cascade(label="File", menu=file_menu)
 
@@ -64,7 +99,11 @@ class InkNoteApp:
         # Search menu
         search_menu = ttk.Menu(menubar, tearoff=False)
 
-        search_menu.add_command(label="Find...", command=self._open_search_dialog)
+        search_menu.add_command(
+            label="Find...",
+            accelerator="Ctrl+F",
+            command=self._open_search_dialog,
+        )
 
         menubar.add_cascade(label="Search", menu=search_menu)
         self.root.config(menu=menubar)
