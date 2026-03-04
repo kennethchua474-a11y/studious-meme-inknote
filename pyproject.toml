@@ -50,3 +50,6 @@ skips = ["tests/*"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+inknote = "inknote.main:main"
