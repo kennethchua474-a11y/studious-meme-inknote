@@ -4,38 +4,37 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-      -name: Checkout repository
-       uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      -name: Install Python
-       uses: actions/setup-python@v5
-       with: 
-       python-version: "3.12"
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      -name: Install Poetry
-       run:  pip install poetry
+      - name: Install Poetry
+        run: pip install poetry
 
-      -name: Install dependencies
-       run:  poetry install
+      - name: Install dependencies
+        run: poetry install
 
-      -name: Run tests
-       run:  poetry run pytest
+      - name: Run tests
+        run: poetry run pytest
 
-      -name: Install PyInstaller
-       run:  poetry run pip install pyinstaller
+      - name: Install PyInstaller
+        run: poetry run pip install pyinstaller
 
-      -name: Build executable
-       run:  poetry run pyinstaller InkNote.spec
+      - name: Build executable
+        run: poetry run pyinstaller InkNote.spec
 
-      -name: Upload executable artifact
-       uses: actions/upload-artifact@v4
-       with:
-         name: InkNote-windows
-         path: dist/InkNote
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InkNote-windows
+          path: dist/InkNote
