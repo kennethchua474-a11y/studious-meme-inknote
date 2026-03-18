@@ -7,6 +7,7 @@ from typing import Optional
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH
 
+from inknote import __version__
 from inknote.fileops import FileReadError, FileWriteError, read_file, write_file
 from inknote.search import find_all
 from inknote.settings import load_settings, save_settings
@@ -204,7 +205,7 @@ class InkNoteApp:
     def _update_title(self) -> None:
         name = self.current_file.name if self.current_file else "Untitled"
         marker = "*" if self.is_modified else ""
-        self.root.title(f"InkNote - {name}{marker}")
+        self.root.title(f"InkNote {__version__} -  {name}{marker}")
 
     def run(self) -> None:
         self.root.mainloop()

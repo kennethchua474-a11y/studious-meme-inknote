@@ -17,11 +17,11 @@ VSVersionInfo(
           [
             StringStruct(u'CompanyName', u'InkNote'),
             StringStruct(u'FileDescription', u'InkNote Text Editor'),
-            StringStruct(u'FileVersion', u'1.0.0'),
+            StringStruct(u'FileVersion', u'0.1.0'),
             StringStruct(u'InternalName', u'InkNote'),
             StringStruct(u'OriginalFilename', u'InkNote.exe'),
             StringStruct(u'ProductName', u'InkNote'),
-            StringStruct(u'ProductVersion', u'1.0.0')
+            StringStruct(u'ProductVersion', u'0.1.0')
           ]
         )
       ]
