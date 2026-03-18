@@ -30,8 +30,6 @@ def write_file(path: Path, content: str) -> None:
     Raises FileWriteError on failure.
     """
     try:
-        # Convert internal LF to CRLF for Windows consistency
-        normalized = content.replace("\n", "\r\n")
-        path.write_text(normalized, encoding="utf-8")
+        path.write_text(content, encoding="utf-8", newline="\n")
     except OSError as exc:
         raise FileWriteError(f"Failed to write file: {path}") from exc
