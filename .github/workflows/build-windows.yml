@@ -6,10 +6,10 @@ on:
     tags:
       - "v*"
   pull_request:
-    branches: [ main ]  # Limit pull_request to main branch only
 
 permissions:
-  contents: write
+  contents: write  # required for creating releases
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -41,15 +41,16 @@ jobs:
       - name: Build executable
         run: poetry run pyinstaller InkNote.spec
 
-      - name: Upload executable artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: InkNote-${{ github.ref_name }}
           path: dist/InkNote
 
-      - name: Create Github Release
+      # ✅ Only runs for tags → avoids rate limit
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'  # Only on tag pushes
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist/InkNote/**
-          generate_release_notes: true  # Optional: auto-generate release notes
+          fail_on_unmatched_files: true
