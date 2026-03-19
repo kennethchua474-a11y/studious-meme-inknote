@@ -6,6 +6,7 @@ on:
     tags:
       - "v*"
   pull_request:
+    branches: [ main ]  # Limit pull_request to main branch only
 
 permissions:
   contents: write
@@ -48,6 +49,7 @@ jobs:
 
       - name: Create Github Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'  # Only on tag pushes
         with:
           files: dist/InkNote/**
+          generate_release_notes: true  # Optional: auto-generate release notes
