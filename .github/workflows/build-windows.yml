@@ -73,7 +73,7 @@ jobs:
       # -------------------------
       - name: Build installer
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       # -------------------------
       # Upload installer artifact
