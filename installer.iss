@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=InkNote
-AppVersion=0.2.6
+AppVersion={#MyAppVersion}
 DefaultDirName={pf}\InkNote
 DefaultGroupName=InkNote
 OutputBaseFilename=InkNote-Setup

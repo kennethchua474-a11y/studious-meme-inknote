@@ -57,6 +57,18 @@ jobs:
         run: poetry run pip install pyinstaller
 
       # -------------------------
+      - name: Extract version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "INKNOTE_VERSION=${GITHUB_REF_NAME#v}" >> $env:GITHUB_ENV
+
+      # -------------------------
+      - name: Set dev version
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: |
+          echo "INKNOTE_VERSION=dev-${{ github.sha }}" >> $env:GITHUB_ENV
+
+      # -------------------------
       # Build executable
       # -------------------------
       - name: Build executable
@@ -74,7 +86,7 @@ jobs:
       - name: Build installer
         shell: cmd
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss /DMyAppVersion=${{ env.INKNOTE_VERSION }}
 
       # -------------------------
       # Upload installer artifact
