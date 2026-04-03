@@ -42,7 +42,9 @@ class InkNoteApp:
         self.root.bind("<Control-n>", lambda e: self._new_file())
         self.root.bind("<Control-o>", lambda e: self._open_file())
         self.root.bind("<Control-s>", lambda e: self._save_file())
-        self.root.bind("<Control-S>", lambda e: self._save_file_as())
+        self.root.bind(
+            "<Control-Shift-S>", lambda e: self._save_file_as()
+        )  # Fixed: Changed from <Control-S> to <Control-Shift-S>
         self.root.bind("<Control-f>", lambda e: self._open_search_dialog())
         self.root.bind("<Control-q>", lambda e: self._on_close())
 
@@ -107,6 +109,12 @@ class InkNoteApp:
         )
 
         menubar.add_cascade(label="Search", menu=search_menu)
+
+        # Help Menu - Moved this BEFORE config(menu=menubar)
+        help_menu = ttk.Menu(menubar, tearoff=False)
+        help_menu.add_command(label="About", command=self._show_about)
+        menubar.add_cascade(label="Help", menu=help_menu)
+
         self.root.config(menu=menubar)
 
     def _build_editor(self) -> None:
@@ -132,12 +140,15 @@ class InkNoteApp:
     def _new_file(self) -> None:
         if not self._confirm_discard_changes():
             return
-        self.is_modified = False
         self.text_widget.delete("1.0", "end")
         self.current_file = None
+        self.is_modified = False  # Moved this after setting current_file
         self._update_title()
 
     def _open_file(self) -> None:
+        if not self._confirm_discard_changes():  # Added check for unsaved changes
+            return
+
         file_path = filedialog.askopenfilename(
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
         )
@@ -150,8 +161,8 @@ class InkNoteApp:
             self.text_widget.delete("1.0", "end")
             self.text_widget.insert("1.0", content)
             self.current_file = Path(file_path)
-            self._update_title()
             self.is_modified = False
+            self._update_title()
         except FileReadError as exc:
             messagebox.showerror("Error", str(exc))
 
@@ -205,7 +216,7 @@ class InkNoteApp:
     def _update_title(self) -> None:
         name = self.current_file.name if self.current_file else "Untitled"
         marker = "*" if self.is_modified else ""
-        self.root.title(f"InkNote {__version__} -  {name}{marker}")
+        self.root.title(f"InkNote {__version__} - {name}{marker}")  # Fixed extra space
 
     def run(self) -> None:
         self.root.mainloop()
@@ -229,13 +240,14 @@ class InkNoteApp:
             variable=ignore_case_var,
         ).pack()
 
+        def search_and_close() -> None:
+            self._perform_search(entry.get(), ignore_case_var.get())
+            dialog.destroy()
+
         ttk.Button(
             dialog,
             text="Search",
-            command=lambda: self._perform_search(
-                entry.get(),
-                ignore_case_var.get(),
-            ),
+            command=search_and_close,
         ).pack(pady=5)
 
     def _perform_search(self, query: str, ignore_case: bool) -> None:
@@ -290,3 +302,9 @@ class InkNoteApp:
     def _on_close(self) -> None:
         if self._confirm_discard_changes():
             self.root.destroy()
+
+    def _show_about(self) -> None:
+        messagebox.showinfo(
+            "About InkNote",
+            f"InkNote\nVersion {__version__}\n\nA lightweight text editor.",
+        )

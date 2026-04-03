@@ -1,10 +1,13 @@
 # InkNote.spec
 
+import os
 from PyInstaller.utils.hooks import collect_submodules
 
 block_cipher = None
 
 hiddenimports = collect_submodules("ttkbootstrap")
+
+version_file = "version.txt" if os.path.exists("version.txt") else None
 
 a = Analysis(
     ["src/inknote/main.py"],
@@ -31,7 +34,7 @@ exe = EXE(
     upx=True,
     console=False,
     icon="assets/inknote.ico",
-    version="version.txt",
+    version=version_file,
     )
 
 coll = COLLECT(

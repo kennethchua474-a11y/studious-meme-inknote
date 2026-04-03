@@ -1,3 +1,6 @@
-import os
+from __future__ import annotations
 
-__version__ = os.getenv("INKNOTE_VERSION", "0.0.0-dev")
+import os
+from typing import Final
+
+__version__: Final[str] = os.getenv("INKNOTE_VERSION", "0.0.0-dev")
