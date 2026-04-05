@@ -68,7 +68,7 @@ jobs:
       - name: Validate semantic version
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          if (-not "${{ github.ref_name }}" -match"^v\d+\.\d+\.\d+$) {
+          if (-not "${{ github.ref_name }}" -match "^v\d+\.\d+\.\d+$") {
             Write-Error "Invalid version tag. Use vMAJOR.MINOR.PATCH"
             exit 1
         }
