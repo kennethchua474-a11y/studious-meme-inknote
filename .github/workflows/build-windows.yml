@@ -96,39 +96,47 @@ jobs:
       - name: Generate version file
         shell: powershell
         run: |
-          $ver = $env:INKNOTE_VERSION -replace '\.', ','
+          # Parse version components
+          $verString = $env:INKNOTE_VERSION
+          if ($verString -match '^(\d+)\.(\d+)\.(\d+)') {
+            $major = [int]$Matches[1]
+            $minor = [int]$Matches[2]
+            $patch = [int]$Matches[3]
+          } else {
+            $major = 0
+            $minor = 0
+            $patch = 0
+          }
 
           @"
-          VSVersionInfo(
-            ffi=FixedFileInfo(
-              filevers=($ver,0),
-              prodvers=($ver,0),
-              mask=0x3f,
-              flags=0x0,
-              OS=0x40004,
-              fileType=0x1,
-              subtype=0x0,
-              date=(0,0)
-            ),
-            kids=[
-              StringFileInfo(
-                [
-                  StringTable(
-                    u'040904B0',
-                    [
-                      StringStruct(u'CompanyName', u'InkNote'),
-                      StringStruct(u'FileDescription', u'InkNote Text Editor'),
-                      StringStruct(u'FileVersion', u'$env:INKNOTE_VERSION'),
-                      StringStruct(u'ProductName', u'InkNote'),
-                      StringStruct(u'ProductVersion', u'$env:INKNOTE_VERSION')
-                    ]
-                  )
-                ]
-              ),
-              VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
-            ]
-          )
-          "@ | Out-File -Encoding utf8 version.txt
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=($major, $minor, $patch, 0),
+    prodvers=($major, $minor, $patch, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0,0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          u'040904B0',
+          [StringStruct(u'CompanyName', u'InkNote'),
+          StringStruct(u'FileDescription', u'InkNote Text Editor'),
+          StringStruct(u'FileVersion', u'$env:INKNOTE_VERSION'),
+          StringStruct(u'ProductName', u'InkNote'),
+          StringStruct(u'ProductVersion', u'$env:INKNOTE_VERSION')]
+        )
+      ]
+    ),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+"@ | Out-File -Encoding utf8 version.txt
 
       # -------------------------
       # Build executable
