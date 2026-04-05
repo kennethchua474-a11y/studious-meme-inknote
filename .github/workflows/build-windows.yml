@@ -2,13 +2,13 @@ name: Build Windows Executable
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags:
       - "v*"
   pull_request:
 
 permissions:
-  contents: write  # required for creating releases
+  contents: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -36,59 +36,73 @@ jobs:
       # Install Poetry
       # -------------------------
       - name: Install Poetry
+        shell: powershell
         run: pip install poetry
 
       # -------------------------
       # Install dependencies
       # -------------------------
       - name: Install dependencies
+        shell: powershell
         run: poetry install
 
       # -------------------------
       # Run tests
       # -------------------------
       - name: Run tests
+        shell: powershell
         run: poetry run pytest
 
       # -------------------------
       # Install PyInstaller
       # -------------------------
       - name: Install PyInstaller
+        shell: powershell
         run: poetry run pip install pyinstaller
 
       # -------------------------
+      # Extract version from tag
+      # -------------------------
       - name: Extract version from tag
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        shell: powershell
         run: |
-          echo "INKNOTE_VERSION=${GITHUB_REF_NAME#v}" >> $env:GITHUB_ENV
+          "INKNOTE_VERSION=$($env:GITHUB_REF_NAME -replace '^v', '')" >> $env:GITHUB_ENV
 
       # -------------------------
-      # Validate Semantic Version
+      # Validate semantic version
       # -------------------------
       - name: Validate semantic version
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        shell: powershell
         run: |
-          if (-not "${{ github.ref_name }}" -match "^v\d+\.\d+\.\d+$") {
+          if ("${{ github.ref_name }}" -notmatch "^v\d+\.\d+\.\d+$") {
             Write-Error "Invalid version tag. Use vMAJOR.MINOR.PATCH"
             exit 1
-        }
+          }
 
       # -------------------------
+      # Set dev version
+      # -------------------------
       - name: Set dev version
-        if: "!startsWith(github.ref, 'refs/tags/')"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        shell: powershell
         run: |
-          echo "INKNOTE_VERSION=dev-${{ github.sha }}" >> $env:GITHUB_ENV
+          "INKNOTE_VERSION=dev-${{ github.sha }}" >> $env:GITHUB_ENV
 
       # -------------------------
       # Generate version file
       # -------------------------
       - name: Generate version file
+        shell: powershell
         run: |
+          $ver = $env:INKNOTE_VERSION -replace '\.', ','
+
           @"
           VSVersionInfo(
             ffi=FixedFileInfo(
-              filevers=(${env:INKNOTE_VERSION//./,},0),
-              prodvers=(${env:INKNOTE_VERSION//./,},0),
+              filevers=($ver,0),
+              prodvers=($ver,0),
               mask=0x3f,
               flags=0x0,
               OS=0x40004,
@@ -104,9 +118,9 @@ jobs:
                     [
                       StringStruct(u'CompanyName', u'InkNote'),
                       StringStruct(u'FileDescription', u'InkNote Text Editor'),
-                      StringStruct(u'FileVersion', u'${env:INKNOTE_VERSION}'),
+                      StringStruct(u'FileVersion', u'$env:INKNOTE_VERSION'),
                       StringStruct(u'ProductName', u'InkNote'),
-                      StringStruct(u'ProductVersion', u'${env:INKNOTE_VERSION}')
+                      StringStruct(u'ProductVersion', u'$env:INKNOTE_VERSION')
                     ]
                   )
                 ]
@@ -120,12 +134,14 @@ jobs:
       # Build executable
       # -------------------------
       - name: Build executable
+        shell: powershell
         run: poetry run pyinstaller InkNote.spec
 
       # -------------------------
       # Install Inno Setup
       # -------------------------
       - name: Install Inno Setup
+        shell: powershell
         run: choco install innosetup -y
 
       # -------------------------
@@ -146,11 +162,11 @@ jobs:
           path: Output/InkNote-Setup.exe
 
       # -------------------------
-      # Create GitHub Release (ONLY for tags)
+      # Create GitHub Release (tags only)
       # -------------------------
       - name: Create GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: Output/InkNote-Setup.exe
           fail_on_unmatched_files: true
