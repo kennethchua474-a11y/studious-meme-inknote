@@ -9,6 +9,7 @@ packages = [{ include = "inknote", from = "src" }]
 [tool.poetry.dependencies]
 python = ">=3.11,<3.15"
 ttkbootstrap = "^1.20.1"
+requests = "^2.33.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
@@ -19,6 +20,7 @@ bandit = "^1.9.2"
 pre-commit = "^4.5.0"
 pyinstaller = "^6.18.0"
 pytest-mypy = "^1.0.1"
+types-requests = "^2.33.0.20260408"
 
 [tool.black]
 line-length = 88
@@ -41,7 +43,7 @@ explicit_package_bases = true
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["pytest", "pytest.*", "ttkbootstrap.*"]
+module = ["pytest", "pytest.*", "ttkbootstrap.*", "requests"]
 ignore_missing_imports = true
 
 [tool.bandit]

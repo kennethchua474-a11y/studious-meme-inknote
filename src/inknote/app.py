@@ -12,6 +12,11 @@ from inknote.fileops import FileReadError, FileWriteError, read_file, write_file
 from inknote.search import find_all
 from inknote.settings import load_settings, save_settings
 from inknote.themes import get_supported_themes, validate_theme
+from inknote.updater import (
+    get_latest_release,
+    is_newer_version,
+    open_download_page,
+)
 
 
 class InkNoteApp:
@@ -33,6 +38,8 @@ class InkNoteApp:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
         self._bind_shortcuts()
+
+        self._check_for_updates()
 
     def _build_ui(self) -> None:
         self._build_menu()
@@ -308,3 +315,22 @@ class InkNoteApp:
             "About InkNote",
             f"InkNote\nVersion {__version__}\n\nA lightweight text editor.",
         )
+
+    def _check_for_updates(self) -> None:
+        latest = get_latest_release()
+
+        if latest is None:
+            return
+
+        if is_newer_version(__version__, latest.version):
+            should_open = messagebox.askyesno(
+                "Update Available",
+                (
+                    f"A new version ({latest.version}) is available.\n\n"
+                    f"Current version: {__version__}\n\n"
+                    "Would you like to download it?"
+                ),
+            )
+
+            if should_open:
+                open_download_page(latest.url)
