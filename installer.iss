@@ -5,7 +5,7 @@ AppName=InkNote
 AppVersion={#MyAppVersion}
 DefaultDirName={pf}\InkNote
 DefaultGroupName=InkNote
-OutputBaseFilename=InkNote-Setup
+OutputBaseFilename=InkNote-Setup-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 

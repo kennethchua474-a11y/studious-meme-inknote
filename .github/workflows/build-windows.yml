@@ -170,8 +170,8 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: InkNote-Setup-${{ github.ref_name }}
-          path: Output/InkNote-Setup.exe
+          name: InkNote-Setup-${{ env.INKNOTE_VERSION }}
+          path: Output/InkNote-Setup-${{ env.INKNOTE_VERSION }}.exe
 
       # -------------------------
       # Create GitHub Release (tags only)
@@ -180,5 +180,5 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v2
         with:
-          files: Output/InkNote-Setup.exe
+          files: Output/InkNote-Setup-${{ env.INKNOTE_VERSION }}.exe
           fail_on_unmatched_files: true
