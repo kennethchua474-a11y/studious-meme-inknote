@@ -91,7 +91,15 @@ jobs:
           "INKNOTE_VERSION=dev-${{ github.sha }}" >> $env:GITHUB_ENV
 
       # -------------------------
-      # Generate version file
+      # Generate runtime version module
+      # -------------------------
+      - name: Generate runtime version module
+        shell: powershell
+        run: |
+          "VERSION = '$env:INKNOTE_VERSION'" | Out-File -FilePath src/inknote/_version.py -Encoding utf8
+
+      # -------------------------
+      # Generate version file for PyInstaller metadata
       # -------------------------
       - name: Generate version file
         shell: powershell
